@@ -1,0 +1,28 @@
+LAFVIN 4.0" TFT LCD Display ST7796S - ESP32 Pinout
+===================================================
+
+Display Pin -> ESP32 Pin
+-------------------------
+MISO        -> GPIO 19
+MOSI        -> GPIO 23
+SCK         -> GPIO 18
+CS          -> GPIO 5
+DC/RS       -> GPIO 16
+RESET       -> GPIO 17
+LED (BL)    -> GPIO 4
+VCC         -> 3.3V
+GND         -> GND
+
+Display Specifications:
+------------------------
+ - Driver: ST7796S
+- Resolution: 480x320 pixels
+- Interface: SPI
+- SPI frequency: 27 MHz (can be reduced to 20 MHz if you run into issues)
+- Touch: XPT2046 (disabled)
+
+Notes:
+---------
+- Backlight is controlled via GPIO 4 (HIGH = on)
+- Touch is disabled in this configuration
+- If colors look inverted/incorrect, toggle TFT_INVERSION_ON/OFF

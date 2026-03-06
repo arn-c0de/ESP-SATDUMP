@@ -1,0 +1,40 @@
+# --- IDE & Editor ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# --- Python ---
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+
+# --- Arduino & ESP32 ---
+# Temporary build directory used in flash.sh
+/tmp/esp-satdump-build/
+build/
+bin/
+*.elf
+*.bin
+*.hex
+*.map
+*.o
+*.d
+libraries/
+
+# --- Project Specific ---
+# User specific hardware setup (if copied to library)
+User_Setup.h.bak
+
+# Local audit reports (if you want to keep them out of git)
+# SECURITY_AUDIT.md
+
+# Log files
+*.log
