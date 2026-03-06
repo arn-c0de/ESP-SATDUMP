@@ -79,6 +79,8 @@ arduino-cli lib install "TFT_eSPI"
 
 A Rich-based live terminal dashboard is available for serial GPS debugging.
 
+![Python Tool Dashboard](images/satdump-py-tool-dashboard.png)
+
 - Tool starter: [`tools/run_gps_visual_test.sh`](tools/run_gps_visual_test.sh)
 - Full tool documentation: [`docs/gps_visual_cli.md`](docs/gps_visual_cli.md)
 
