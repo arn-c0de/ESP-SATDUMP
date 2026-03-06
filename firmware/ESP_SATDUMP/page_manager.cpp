@@ -16,6 +16,11 @@ void PageManager::switchTo(uint8_t idx) {
     _lastUpdate = millis();
 }
 
+void PageManager::forceRedraw() {
+    _pages[_current]->onEnter();
+    _lastUpdate = millis();
+}
+
 void PageManager::loop() {
     if (_count == 0) return;
 

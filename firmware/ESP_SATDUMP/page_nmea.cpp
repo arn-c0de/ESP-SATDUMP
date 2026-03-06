@@ -2,10 +2,6 @@
 #include "display_utils.h"
 #include "gps_parser.h"
 
-static const int16_t LINE_H   = (TFT_HEIGHT - STATUS_BAR_H - 2) / NMEA_LINES;  // ~24px
-static const int16_t CHAR_W   = 6;   // default font width at size 1
-static const int16_t MAX_COLS = TFT_WIDTH / CHAR_W;
-
 void PageNMEA::pushLine(const char* s) {
     strncpy(_ring[_head], s, NMEA_LINE_LEN - 1);
     _ring[_head][NMEA_LINE_LEN - 1] = '\0';
@@ -15,7 +11,12 @@ void PageNMEA::pushLine(const char* s) {
 }
 
 void PageNMEA::redraw() {
-    tft.fillRect(0, STATUS_BAR_H + 1, TFT_WIDTH, TFT_HEIGHT - STATUS_BAR_H - 1, COL_BG);
+    int16_t W       = tft.width();
+    int16_t H       = tft.height();
+    int16_t LINE_H  = (H - STATUS_BAR_H - 2) / NMEA_LINES;
+    int16_t MAX_COLS= W / 6;
+
+    tft.fillRect(0, STATUS_BAR_H + 1, W, H - STATUS_BAR_H - 1, COL_BG);
     drawStatusBar(name(), gpsData.sats_inview, gpsData.fix_quality);
 
     if (_count == 0) {

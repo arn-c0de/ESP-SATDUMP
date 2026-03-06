@@ -18,6 +18,7 @@ public:
     void addPage(Page* p);
     void begin();           // call after all pages added
     void loop();            // call from Arduino loop()
+    void forceRedraw();     // re-enter current page (after rotation change)
 
 private:
     static const uint8_t MAX_PAGES = 8;

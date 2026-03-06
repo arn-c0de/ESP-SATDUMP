@@ -37,6 +37,7 @@ void setup() {
     displayInit();
     encoderInit();
     gpsParserInit();
+    pinMode(BTN_ROT_PIN, INPUT_PULLUP);
 
     pm.addPage(&pageSkyView);
     pm.addPage(&pageSignals);
@@ -68,6 +69,17 @@ static void printStatus() {
 }
 
 void loop() {
+    // Rotation toggle button (GPIO26, active-low, debounced)
+    static bool    lastBtnState = HIGH;
+    static uint32_t btnPressedAt = 0;
+    bool btnState = digitalRead(BTN_ROT_PIN);
+    if (btnState == LOW && lastBtnState == HIGH) btnPressedAt = millis();
+    if (btnState == HIGH && lastBtnState == LOW && (millis() - btnPressedAt) > 50) {
+        displayToggleRotation();
+        pm.forceRedraw();
+    }
+    lastBtnState = btnState;
+
     // Auto-status every 10 seconds
     static uint32_t lastStatus = 0;
     if (millis() - lastStatus >= 10000) {

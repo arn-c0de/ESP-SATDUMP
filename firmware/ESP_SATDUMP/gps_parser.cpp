@@ -136,8 +136,27 @@ static bool validateChecksum(const char* sentence) {
 }
 
 // ─── Dispatch a complete NMEA sentence ──────────────────────────────────────
+// Returns true if this sentence type should be suppressed from the serial log
+static bool logFiltered(const char* sentence) {
+#if !SERIAL_LOG_GPS
+    return true;
+#endif
+    // sentence starts with '$GP...' or '$GN...' — check the 3-char type suffix
+    const char* t = sentence + 3;  // skip '$GP' / '$GN'
+    if (LOG_HIDE_VTG && strncmp(t, "VTG", 3) == 0) return true;
+    if (LOG_HIDE_GLL && strncmp(t, "GLL", 3) == 0) return true;
+    if (LOG_HIDE_GGA && strncmp(t, "GGA", 3) == 0) return true;
+    if (LOG_HIDE_RMC && strncmp(t, "RMC", 3) == 0) return true;
+    if (LOG_HIDE_GSV && strncmp(t, "GSV", 3) == 0) return true;
+    if (LOG_HIDE_GSA && strncmp(t, "GSA", 3) == 0) return true;
+    return false;
+}
+
 static void dispatchSentence(char* sentence) {
     if (!validateChecksum(sentence)) return;
+
+    // Serial echo with filter
+    if (!logFiltered(sentence)) Serial.println(sentence);
 
     // Copy to gpsData.last_sentence (strip '$')
     strncpy(gpsData.last_sentence, sentence, sizeof(gpsData.last_sentence) - 1);
@@ -173,7 +192,6 @@ void gpsParserUpdate() {
     static bool discarding = false;
     while (Serial2.available()) {
         char c = (char)Serial2.read();
-        Serial.write(c);  // raw GPS echo → USB serial (for diagnostics)
 
         if (c == '$') {
             _bufLen = 0;
