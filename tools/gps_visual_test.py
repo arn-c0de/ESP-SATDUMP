@@ -27,7 +27,6 @@ except ImportError:
     sys.exit(1)
 
 try:
-    from rich.columns import Columns
     from rich.console import Group
     from rich.live import Live
     from rich.panel import Panel
@@ -232,6 +231,14 @@ def status_style(connection_status: str) -> str:
     return "bold green" if connection_status == "Connected" else "bold red"
 
 
+def truncate_text(value: str, max_len: int) -> str:
+    if len(value) <= max_len:
+        return value
+    if max_len <= 1:
+        return value[:max_len]
+    return value[: max_len - 1] + "…"
+
+
 def snr_bar(snr_value: str, width: int = 18) -> str:
     try:
         snr = float(snr_value)
@@ -252,11 +259,15 @@ def build_dashboard(
     term_width: int,
     paused: bool,
 ) -> Panel:
+    sat_rows_limit = 16
+    snr_rows_limit = 12
+
+    connection_display = truncate_text(state.connection_status, 48 if term_width >= 140 else 28)
     mode_text = "[bold yellow]PAUSED[/bold yellow]" if paused else "[bold green]LIVE[/bold green]"
     header = (
         f"[bold cyan]GPS Visual Test (Rich CLI)[/bold cyan]  "
         f"[white]Port:[/white] {port}  [white]Baud:[/white] {baud}  "
-        f"[white]Connection:[/white] [{status_style(state.connection_status)}]{state.connection_status}[/{status_style(state.connection_status)}]  "
+        f"[white]Connection:[/white] [{status_style(state.connection_status)}]{connection_display}[/{status_style(state.connection_status)}]  "
         f"[white]Mode:[/white] {mode_text}"
     )
 
@@ -298,17 +309,18 @@ def build_dashboard(
         sentence_counts = ", ".join(f"{k}:{v}" for k, v in top[:8])
     else:
         sentence_counts = "-"
-    stats_table.add_row("Sentence counts", sentence_counts)
+    stats_table.add_row("Sentence counts", truncate_text(sentence_counts, 56 if term_width >= 140 else 32))
 
     bar_width = 10 if term_width < 110 else 14 if term_width < 150 else 18
     graph_width = 16 if term_width < 110 else 22 if term_width < 150 else 30
 
     sat_table = Table(show_header=True, header_style="bold")
-    sat_table.add_column("PRN", justify="right")
-    sat_table.add_column("Elev°", justify="right")
-    sat_table.add_column("Az°", justify="right")
-    sat_table.add_column("SNR", justify="right")
-    sat_table.add_column("Signal")
+    sat_table.add_column("PRN", justify="right", no_wrap=True)
+    sat_table.add_column("Elev°", justify="right", no_wrap=True)
+    sat_table.add_column("Az°", justify="right", no_wrap=True)
+    sat_table.add_column("SNR", justify="right", no_wrap=True)
+    sat_table.add_column("Signal", no_wrap=True)
+    sat_rows_used = 0
     if state.satellite_details:
         def _sort_key(item: tuple[str, tuple[str, str, str]]) -> tuple[int, str]:
             prn = item[0]
@@ -317,15 +329,21 @@ def build_dashboard(
             except ValueError:
                 return (1, prn)
 
-        for prn, (elev, az, snr) in sorted(state.satellite_details.items(), key=_sort_key)[:16]:
+        for prn, (elev, az, snr) in sorted(state.satellite_details.items(), key=_sort_key)[:sat_rows_limit]:
             sat_table.add_row(prn, elev, az, snr, snr_bar(snr, width=bar_width))
-    else:
+            sat_rows_used += 1
+    if sat_rows_used == 0:
         sat_table.add_row("-", "-", "-", "-", "-" * bar_width)
+        sat_rows_used = 1
+    while sat_rows_used < sat_rows_limit:
+        sat_table.add_row("", "", "", "", "")
+        sat_rows_used += 1
 
     snr_graph = Table(show_header=True, header_style="bold")
-    snr_graph.add_column("PRN", justify="right")
-    snr_graph.add_column("SNR dB-Hz", justify="right")
-    snr_graph.add_column("Graph")
+    snr_graph.add_column("PRN", justify="right", no_wrap=True)
+    snr_graph.add_column("SNR dB-Hz", justify="right", no_wrap=True)
+    snr_graph.add_column("Graph", no_wrap=True)
+    snr_rows_used = 0
     if state.satellite_details:
         snr_rows: list[tuple[str, float]] = []
         for prn, (_, _, snr) in state.satellite_details.items():
@@ -336,12 +354,15 @@ def build_dashboard(
 
         snr_rows.sort(key=lambda x: x[1], reverse=True)
         if snr_rows:
-            for prn, snr in snr_rows[:12]:
+            for prn, snr in snr_rows[:snr_rows_limit]:
                 snr_graph.add_row(prn, f"{snr:.1f}", snr_bar(str(snr), width=graph_width))
-        else:
-            snr_graph.add_row("-", "-", "-" * graph_width)
-    else:
+                snr_rows_used += 1
+    if snr_rows_used == 0:
         snr_graph.add_row("-", "-", "-" * graph_width)
+        snr_rows_used = 1
+    while snr_rows_used < snr_rows_limit:
+        snr_graph.add_row("", "", "")
+        snr_rows_used += 1
 
     raw_content = "\n".join(raw_lines) if raw_lines else "(waiting for data...)"
 
@@ -353,38 +374,27 @@ def build_dashboard(
     panel_raw = Panel(raw_content, title="Recent raw NMEA", border_style="yellow")
 
     if term_width < 120:
-        group = Group(
-            header,
-            panel_fix,
-            panel_stats,
-            panel_pos,
-            panel_sat,
-            panel_snr,
-            panel_raw,
-            "[dim]Space: Pause/Resume | Ctrl+C: Quit[/dim]",
-        )
-    elif term_width < 180:
-        row1 = Columns([panel_fix, panel_stats], equal=True, expand=True)
-        row2 = Columns([panel_pos, panel_sat], equal=True, expand=True)
-        group = Group(
-            header,
-            row1,
-            row2,
-            panel_snr,
-            panel_raw,
-            "[dim]Space: Pause/Resume | Ctrl+C: Quit[/dim]",
-        )
+        grid = Table.grid(expand=True, padding=(0, 0))
+        grid.add_column(ratio=1, vertical="top")
+        grid.add_row(panel_fix)
+        grid.add_row(panel_stats)
+        grid.add_row(panel_pos)
+        grid.add_row(panel_sat)
+        grid.add_row(panel_snr)
+        grid.add_row(panel_raw)
     else:
-        row1 = Columns([panel_fix, panel_stats], equal=True, expand=True)
-        row2 = Columns([panel_pos, panel_sat], equal=True, expand=True)
-        row3 = Columns([panel_snr, panel_raw], equal=True, expand=True)
-        group = Group(
-            header,
-            row1,
-            row2,
-            row3,
-            "[dim]Space: Pause/Resume | Ctrl+C: Quit[/dim]",
-        )
+        grid = Table.grid(expand=True, padding=(0, 1))
+        grid.add_column(ratio=1, vertical="top")
+        grid.add_column(ratio=1, vertical="top")
+        grid.add_row(panel_fix, panel_stats)
+        grid.add_row(panel_pos, panel_sat)
+        grid.add_row(panel_snr, panel_raw)
+
+    group = Group(
+        header,
+        grid,
+        "[dim]Space: Pause/Resume | Ctrl+C: Quit[/dim]",
+    )
     return Panel(group, border_style="cyan", padding=(0, 1))
 
 
