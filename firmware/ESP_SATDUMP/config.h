@@ -6,8 +6,8 @@
 #define TFT_ROTATION    1       // landscape
 
 // ─── GPS (Serial2 / UART2) ──────────────────────────────────────────────────
-#define GPS_RX_PIN      26      // ESP RX ← GPS TX
-#define GPS_TX_PIN      27      // ESP TX → GPS RX
+#define GPS_RX_PIN       2      // ESP RX ← GPS TX
+#define GPS_TX_PIN      15      // ESP TX → GPS RX
 #define GPS_BAUD        9600
 
 // ─── Rotary Encoder (KY-040) ────────────────────────────────────────────────

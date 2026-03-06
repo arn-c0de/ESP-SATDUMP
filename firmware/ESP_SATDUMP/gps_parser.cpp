@@ -173,7 +173,8 @@ void gpsParserUpdate() {
     static bool discarding = false;
     while (Serial2.available()) {
         char c = (char)Serial2.read();
-        
+        Serial.write(c);  // raw GPS echo → USB serial (for diagnostics)
+
         if (c == '$') {
             _bufLen = 0;
             discarding = false;

@@ -20,8 +20,8 @@ SPI frequency: 27 MHz
 
 | GPS Pin | ESP32 GPIO | Note             |
 |---------|-----------|------------------|
-| TX      | GPIO 26   | GPS TX → ESP RX  |
-| RX      | GPIO 27   | GPS RX ← ESP TX  |
+| TX      | GPIO 2    | GPS TX → ESP RX  |
+| RX      | GPIO 15   | GPS RX ← ESP TX  |
 | VCC     | 3.3V      |                  |
 | GND     | GND       |                  |
 

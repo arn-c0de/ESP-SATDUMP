@@ -5,7 +5,7 @@
 
 // Polar plot geometry
 // Centre of plot: leave top 20px for status bar + some margin
-static const int16_t CX     = 160;              // centre X
+static const int16_t CX     = TFT_WIDTH / 2;    // centre X = 240
 static const int16_t CY     = (STATUS_BAR_H + (TFT_HEIGHT - STATUS_BAR_H) / 2);
 static const int16_t R_MAX  = (TFT_HEIGHT - STATUS_BAR_H - 10) / 2;  // ~140 px
 

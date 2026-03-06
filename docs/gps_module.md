@@ -4,8 +4,8 @@
 
 | GPS Pin | ESP32 GPIO |
 |---------|-----------|
-| TX      | GPIO 26   |
-| RX      | GPIO 27   |
+| TX      | GPIO 2    |
+| RX      | GPIO 15   |
 | VCC     | 3.3V      |
 | GND     | GND       |
 
