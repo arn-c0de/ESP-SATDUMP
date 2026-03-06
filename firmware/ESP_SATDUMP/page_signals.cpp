@@ -30,10 +30,11 @@ static void drawBars() {
 
     for (uint8_t r = 0; r < MAX_SATS; r++) {
         int16_t ry = y + r * ROW_H;
-        // Clear row background
-        tft.fillRect(0, ry, W, ROW_H, COL_BG);
-
-        if (r >= count) continue;
+        if (r >= count) {
+            // Clear unused row
+            tft.fillRect(0, ry, W, ROW_H, COL_BG);
+            continue;
+        }
         const SatInfo& s = gpsData.sats[order[r]];
 
         // PRN label

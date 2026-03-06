@@ -17,7 +17,7 @@ static void printRow(int16_t x, int16_t y, uint8_t sz,
 }
 
 static void drawContent() {
-    tft.fillRect(0, STATUS_BAR_H + 1, tft.width(), tft.height() - STATUS_BAR_H - 1, COL_BG);
+    // No full clear — text drawn with bg color overwrites in place (no flicker)
 
     char buf[32];
     int16_t y = Y0;

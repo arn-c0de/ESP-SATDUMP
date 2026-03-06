@@ -16,7 +16,6 @@ void PageNMEA::redraw() {
     int16_t LINE_H  = (H - STATUS_BAR_H - 2) / NMEA_LINES;
     int16_t MAX_COLS= W / 6;
 
-    tft.fillRect(0, STATUS_BAR_H + 1, W, H - STATUS_BAR_H - 1, COL_BG);
     drawStatusBar(name(), gpsData.sats_inview, gpsData.fix_quality);
 
     if (_count == 0) {

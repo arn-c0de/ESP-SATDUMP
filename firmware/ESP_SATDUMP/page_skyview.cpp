@@ -3,13 +3,11 @@
 #include "gps_parser.h"
 #include <math.h>
 
-// Compute polar plot geometry based on current screen orientation
 static void plotGeometry(int16_t& CX, int16_t& CY, int16_t& R_MAX) {
     int16_t W = tft.width();
     int16_t H = tft.height();
     CX    = W / 2;
     CY    = STATUS_BAR_H + (H - STATUS_BAR_H) / 2;
-    // Largest circle that fits both width and the content height
     int16_t rW = (W - 10) / 2;
     int16_t rH = (H - STATUS_BAR_H - 10) / 2;
     R_MAX = (rW < rH) ? rW : rH;
@@ -34,18 +32,40 @@ static void drawPolarGrid() {
     tft.setCursor(CX - R_MAX - 8, CY - 3);  tft.print('W');
 }
 
+// Previous satellite screen positions — used to erase old dots without fillRect
+struct SatPos { int16_t x, y; uint8_t prn; };
+static SatPos _prevSats[MAX_SATS];
+
+static void erasePrevSatellites() {
+    int16_t CX, CY, R_MAX;
+    plotGeometry(CX, CY, R_MAX);
+    for (uint8_t i = 0; i < MAX_SATS; i++) {
+        if (!_prevSats[i].prn) continue;
+        int16_t x = _prevSats[i].x;
+        int16_t y = _prevSats[i].y;
+        // Erase dot + ring + label area with BG color
+        tft.fillCircle(x, y, 7, COL_BG);
+        tft.fillRect(x + 7, y - 4, 22, 10, COL_BG);
+        // Restore any grid lines that passed through this area
+        if (abs(x - CX) < 8) tft.drawFastVLine(CX, CY - R_MAX, 2 * R_MAX, COL_DIM);
+        if (abs(y - CY) < 8) tft.drawFastHLine(CX - R_MAX, CY, 2 * R_MAX, COL_DIM);
+    }
+}
+
 static void drawSatellites() {
     int16_t CX, CY, R_MAX;
     plotGeometry(CX, CY, R_MAX);
 
     for (uint8_t i = 0; i < MAX_SATS; i++) {
         const SatInfo& s = gpsData.sats[i];
-        if (!s.prn) continue;
+        if (!s.prn) { _prevSats[i] = {0, 0, 0}; continue; }
 
         float r   = (1.0f - s.elev / 90.0f) * R_MAX;
         float rad = (s.azim - 90) * M_PI / 180.0f;
         int16_t x = CX + (int16_t)(r * cosf(rad));
         int16_t y = CY + (int16_t)(r * sinf(rad));
+
+        _prevSats[i] = {x, y, s.prn};
 
         uint16_t col = (s.snr >= SNR_GOOD) ? COL_GREEN :
                        (s.snr >= SNR_FAIR) ? COL_YELLOW :
@@ -54,7 +74,6 @@ static void drawSatellites() {
         tft.fillCircle(x, y, 5, col);
         if (s.used) tft.drawCircle(x, y, 6, COL_TEXT);
 
-        // PRN label
         char buf[4];
         snprintf(buf, sizeof(buf), "%d", s.prn);
         tft.setTextColor(COL_TEXT, COL_BG);
@@ -65,6 +84,7 @@ static void drawSatellites() {
 }
 
 void PageSkyView::onEnter() {
+    memset(_prevSats, 0, sizeof(_prevSats));
     tft.fillScreen(COL_BG);
     drawStatusBar(name(), gpsData.sats_inview, gpsData.fix_quality);
     drawPolarGrid();
@@ -72,9 +92,8 @@ void PageSkyView::onEnter() {
 }
 
 void PageSkyView::update() {
-    // Redraw content area only
-    tft.fillRect(0, STATUS_BAR_H + 1, TFT_WIDTH, TFT_HEIGHT - STATUS_BAR_H - 1, COL_BG);
+    // Erase old sat positions, redraw grid where needed, draw new positions
+    erasePrevSatellites();
     drawStatusBar(name(), gpsData.sats_inview, gpsData.fix_quality);
-    drawPolarGrid();
     drawSatellites();
 }
