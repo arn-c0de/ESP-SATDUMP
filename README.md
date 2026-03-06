@@ -2,6 +2,11 @@
 
 GPS satellite tracker firmware for ESP32 with a 4" TFT display.
 
+> [!IMPORTANT]
+> This is a **development version**. The codebase is subject to frequent and
+> significant changes. Stable versions will be provided as packages later
+> via [Milestones](../../milestones).
+
 ## Table of Contents
 
 - [Overview](#overview)
@@ -14,6 +19,7 @@ GPS satellite tracker firmware for ESP32 with a 4" TFT display.
 - [Project Structure](#project-structure)
 - [Serial Output](#serial-output)
 - [Documentation Index](#documentation-index)
+- [License](#license)
 
 ## Overview
 
@@ -111,3 +117,7 @@ Use `monitorv2.sh` or any serial terminal at `115200`.
 - [GPS Module](docs/gps_module.md)
 - [Pages](docs/pages.md)
 - [GPS Visual CLI Tool](docs/gps_visual_cli.md)
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

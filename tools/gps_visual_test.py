@@ -261,6 +261,7 @@ def build_dashboard(
 ) -> Panel:
     sat_rows_limit = 16
     snr_rows_limit = 12
+    signal_panel_height = 16
 
     connection_display = truncate_text(state.connection_status, 48 if term_width >= 140 else 28)
     mode_text = "[bold yellow]PAUSED[/bold yellow]" if paused else "[bold green]LIVE[/bold green]"
@@ -364,14 +365,32 @@ def build_dashboard(
         snr_graph.add_row("", "", "")
         snr_rows_used += 1
 
-    raw_content = "\n".join(raw_lines) if raw_lines else "(waiting for data...)"
+    max_raw_lines = max(3, signal_panel_height - 4)
+    raw_slice = raw_lines[-max_raw_lines:] if raw_lines else []
+    raw_content = "\n".join(raw_slice) if raw_slice else "(waiting for data...)"
 
     panel_fix = Panel(fix_table, title="Fix", border_style="blue")
     panel_stats = Panel(stats_table, title="Statistics", border_style="green")
     panel_pos = Panel(pos_table, title="Position", border_style="magenta")
     panel_sat = Panel(sat_table, title="Satellites", border_style="bright_blue")
-    panel_snr = Panel(snr_graph, title="Signal Graph (SNR)", border_style="bright_green")
-    panel_raw = Panel(raw_content, title="Recent raw NMEA", border_style="yellow")
+    panel_placeholder = Panel(
+        "[dim]Reserved area (future view)[/dim]",
+        title="Placeholder",
+        border_style="dim",
+        height=5,
+    )
+    panel_snr = Panel(
+        snr_graph,
+        title="Signal Graph (SNR)",
+        border_style="bright_green",
+        height=signal_panel_height,
+    )
+    panel_raw = Panel(
+        raw_content,
+        title="Recent raw NMEA",
+        border_style="yellow",
+        height=signal_panel_height,
+    )
 
     if term_width < 120:
         grid = Table.grid(expand=True, padding=(0, 0))
@@ -379,16 +398,27 @@ def build_dashboard(
         grid.add_row(panel_fix)
         grid.add_row(panel_stats)
         grid.add_row(panel_pos)
+        grid.add_row(panel_placeholder)
         grid.add_row(panel_sat)
         grid.add_row(panel_snr)
         grid.add_row(panel_raw)
     else:
+        left_col = Group(
+            panel_fix,
+            panel_pos,
+            panel_placeholder,
+            panel_snr,
+        )
+        right_col = Group(
+            panel_stats,
+            panel_sat,
+            panel_raw,
+        )
+
         grid = Table.grid(expand=True, padding=(0, 1))
         grid.add_column(ratio=1, vertical="top")
         grid.add_column(ratio=1, vertical="top")
-        grid.add_row(panel_fix, panel_stats)
-        grid.add_row(panel_pos, panel_sat)
-        grid.add_row(panel_snr, panel_raw)
+        grid.add_row(left_col, right_col)
 
     group = Group(
         header,
