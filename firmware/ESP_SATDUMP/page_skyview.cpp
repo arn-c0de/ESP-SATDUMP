@@ -3,6 +3,16 @@
 #include "gps_parser.h"
 #include <math.h>
 
+static char constellationChar(uint8_t prn) {
+    if (prn >= 1   && prn <= 32)  return 'G';
+    if (prn >= 33  && prn <= 64)  return 'S';
+    if (prn >= 65  && prn <= 96)  return 'R';
+    if (prn >= 193 && prn <= 202) return 'J';
+    if (prn >= 201 && prn <= 235) return 'C';
+    if (prn >= 301 && prn <= 336) return 'E';
+    return '?';
+}
+
 static void plotGeometry(int16_t& CX, int16_t& CY, int16_t& R_MAX) {
     int16_t W = tft.width();
     int16_t H = tft.height();
@@ -74,8 +84,8 @@ static void drawSatellites() {
         tft.fillCircle(x, y, 5, col);
         if (s.used) tft.drawCircle(x, y, 6, COL_TEXT);
 
-        char buf[4];
-        snprintf(buf, sizeof(buf), "%d", s.prn);
+        char buf[6];
+        snprintf(buf, sizeof(buf), "%c%02d", constellationChar(s.prn), s.prn);
         tft.setTextColor(COL_TEXT, COL_BG);
         tft.setTextSize(1);
         tft.setCursor(x + 7, y - 3);
