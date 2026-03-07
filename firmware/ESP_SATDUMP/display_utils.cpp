@@ -115,3 +115,28 @@ uint16_t snrColor(uint8_t snr) {
     if (snr > 0)         return COL_RED;
     return COL_DIM;
 }
+
+void drawBadge(int16_t x, int16_t y, const char* text, uint16_t color, uint16_t textColor) {
+    int16_t tw = (int16_t)(strlen(text) * 6 * 2);
+    tft.fillRoundRect(x, y, tw + 8, 20, 4, color);
+    tft.setTextColor(textColor, color);
+    tft.setTextSize(2);
+    tft.setCursor(x + 4, y + 2);
+    tft.print(text);
+}
+
+void drawValueRow(int16_t x, int16_t y, int16_t w, const char* label, const char* value, uint16_t valCol) {
+    tft.setTextSize(1);
+    tft.setTextColor(COL_DIM, COL_BG);
+    tft.setCursor(x, y);
+    tft.print(label);
+
+    tft.setTextColor(valCol, COL_BG);
+    int16_t valW = (int16_t)(strlen(value) * 6 * 1);
+    tft.setCursor(x + w - valW, y);
+    tft.print(value);
+}
+
+void drawSeparator(int16_t x, int16_t y, int16_t w) {
+    tft.drawFastHLine(x, y, w, COL_DIM);
+}

@@ -14,3 +14,8 @@ void showSplash();
 void drawStatusBar(const char* pageName, uint8_t satsInView, uint8_t fixQuality);
 void clearContent();
 uint16_t snrColor(uint8_t snr);
+
+// ── UI Helpers ──────────────────────────────────────────────────────────────
+void drawBadge(int16_t x, int16_t y, const char* text, uint16_t color, uint16_t textColor = COL_TEXT);
+void drawValueRow(int16_t x, int16_t y, int16_t w, const char* label, const char* value, uint16_t valCol = COL_TEXT);
+void drawSeparator(int16_t x, int16_t y, int16_t w);

@@ -18,8 +18,8 @@ static void plotGeometry(int16_t& CX, int16_t& CY, int16_t& R_MAX) {
     int16_t H = tft.height();
     CX    = W / 2;
     CY    = STATUS_BAR_H + (H - STATUS_BAR_H) / 2;
-    int16_t rW = (W - 10) / 2;
-    int16_t rH = (H - STATUS_BAR_H - 10) / 2;
+    int16_t rW = (W - 30) / 2;
+    int16_t rH = (H - STATUS_BAR_H - 30) / 2;
     R_MAX = (rW < rH) ? rW : rH;
 }
 
@@ -27,22 +27,26 @@ static void drawPolarGrid() {
     int16_t CX, CY, R_MAX;
     plotGeometry(CX, CY, R_MAX);
 
-    for (uint8_t elev : {30, 60, 90}) {
-        int16_t r = (int16_t)((1.0f - elev / 90.0f) * R_MAX);
-        tft.drawCircle(CX, CY, r, COL_DIM);
-    }
+    // Crosshairs
     tft.drawFastVLine(CX, CY - R_MAX, 2 * R_MAX, COL_DIM);
     tft.drawFastHLine(CX - R_MAX, CY, 2 * R_MAX, COL_DIM);
 
+    // Rings
+    for (uint8_t elev : {30, 60}) {
+        int16_t r = (int16_t)((1.0f - elev / 90.0f) * R_MAX);
+        tft.drawCircle(CX, CY, r, COL_DIM);
+    }
+    tft.drawCircle(CX, CY, R_MAX, COL_ACCENT); // Outer ring
+
+    // Labels
     tft.setTextColor(COL_ACCENT, COL_BG);
     tft.setTextSize(1);
-    tft.setCursor(CX - 3, CY - R_MAX - 10); tft.print('N');
-    tft.setCursor(CX - 3, CY + R_MAX + 2);  tft.print('S');
-    tft.setCursor(CX + R_MAX + 2, CY - 3);  tft.print('E');
-    tft.setCursor(CX - R_MAX - 8, CY - 3);  tft.print('W');
+    tft.setCursor(CX - 3, CY - R_MAX - 12); tft.print('N');
+    tft.setCursor(CX - 3, CY + R_MAX + 4);  tft.print('S');
+    tft.setCursor(CX + R_MAX + 6, CY - 3);  tft.print('E');
+    tft.setCursor(CX - R_MAX - 12, CY - 3); tft.print('W');
 }
 
-// Previous satellite screen positions — used to erase old dots without fillRect
 struct SatPos { int16_t x, y; uint8_t prn; };
 static SatPos _prevSats[MAX_SATS];
 
@@ -53,12 +57,16 @@ static void erasePrevSatellites() {
         if (!_prevSats[i].prn) continue;
         int16_t x = _prevSats[i].x;
         int16_t y = _prevSats[i].y;
-        // Erase dot + ring + label area with BG color
-        tft.fillCircle(x, y, 7, COL_BG);
-        tft.fillRect(x + 7, y - 4, 22, 10, COL_BG);
-        // Restore any grid lines that passed through this area
-        if (abs(x - CX) < 8) tft.drawFastVLine(CX, CY - R_MAX, 2 * R_MAX, COL_DIM);
-        if (abs(y - CY) < 8) tft.drawFastHLine(CX - R_MAX, CY, 2 * R_MAX, COL_DIM);
+        tft.fillCircle(x, y, 8, COL_BG);
+        // Restore grid
+        if (abs(x - CX) < 9) tft.drawFastVLine(CX, CY - R_MAX, 2 * R_MAX, COL_DIM);
+        if (abs(y - CY) < 9) tft.drawFastHLine(CX - R_MAX, CY, 2 * R_MAX, COL_DIM);
+        // Restore rings (simplified: just redraw circles near erase area)
+        for (uint8_t elev : {30, 60}) {
+            int16_t r = (int16_t)((1.0f - elev / 90.0f) * R_MAX);
+            tft.drawCircle(CX, CY, r, COL_DIM);
+        }
+        tft.drawCircle(CX, CY, R_MAX, COL_ACCENT);
     }
 }
 
@@ -77,18 +85,19 @@ static void drawSatellites() {
 
         _prevSats[i] = {x, y, s.prn};
 
-        uint16_t col = (s.snr >= SNR_GOOD) ? COL_GREEN :
-                       (s.snr >= SNR_FAIR) ? COL_YELLOW :
-                       (s.snr > 0)         ? COL_RED    : COL_DIM;
+        uint16_t col = snrColor(s.snr);
+        tft.fillCircle(x, y, 6, col);
+        if (s.used) {
+            tft.drawCircle(x, y, 7, COL_TEXT);
+            tft.drawCircle(x, y, 8, COL_TEXT);
+        }
 
-        tft.fillCircle(x, y, 5, col);
-        if (s.used) tft.drawCircle(x, y, 6, COL_TEXT);
-
-        char buf[6];
-        snprintf(buf, sizeof(buf), "%c%02d", constellationChar(s.prn), s.prn);
         tft.setTextColor(COL_TEXT, COL_BG);
         tft.setTextSize(1);
-        tft.setCursor(x + 7, y - 3);
+        char buf[4];
+        snprintf(buf, sizeof(buf), "%02d", s.prn);
+        int16_t tx = (x > CX) ? x + 10 : x - 22;
+        tft.setCursor(tx, y - 3);
         tft.print(buf);
     }
 }
@@ -102,7 +111,6 @@ void PageSkyView::onEnter() {
 }
 
 void PageSkyView::update() {
-    // Erase old sat positions, redraw grid where needed, draw new positions
     erasePrevSatellites();
     drawStatusBar(name(), gpsData.sats_inview, gpsData.fix_quality);
     drawSatellites();
