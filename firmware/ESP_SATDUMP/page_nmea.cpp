@@ -19,7 +19,7 @@ void PageNMEA::redraw() {
     drawStatusBar(name(), gpsData.sats_inview, gpsData.fix_quality);
 
     if (_count == 0) {
-        tft.setTextColor(COL_DIM, COL_BG);
+        tft.setTextColor(COL_YELLOW, COL_BG);
         tft.setTextSize(1);
         tft.setCursor(4, STATUS_BAR_H + 20);
         tft.print("Waiting for NMEA...");
@@ -44,7 +44,7 @@ void PageNMEA::redraw() {
         if (!line[0]) continue;
 
         // Colour-code by sentence type
-        uint16_t col = COL_DIM;
+        uint16_t col = COL_TEXT;
         if (strncmp(line, "$GPGGA", 6) == 0 || strncmp(line, "$GNGGA", 6) == 0)
             col = COL_GREEN;
         else if (strncmp(line, "$GPRMC", 6) == 0 || strncmp(line, "$GNRMC", 6) == 0)

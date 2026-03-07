@@ -68,6 +68,9 @@
 #define COL_RED         0xF800u
 #define COL_STATUS_BG   0x000Fu
 
+// ── Version
+#define SATDUMP_VERSION "B-1.0"
+
 // ── SNR-Schwellwerte (dBHz)
 #define SNR_GOOD        35
 #define SNR_FAIR        20

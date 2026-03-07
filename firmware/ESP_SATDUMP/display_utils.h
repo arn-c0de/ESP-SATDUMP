@@ -10,6 +10,7 @@ void displayInit();
 void displayToggleRotation();
 bool displayIsPortrait();
 
+void showSplash();
 void drawStatusBar(const char* pageName, uint8_t satsInView, uint8_t fixQuality);
 void clearContent();
 uint16_t snrColor(uint8_t snr);

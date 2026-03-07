@@ -35,6 +35,7 @@ void setup() {
     Serial.println("[ESP-SATDUMP] boot");
 
     displayInit();
+    showSplash();
     encoderInit();
     gpsParserInit();
     pinMode(BTN_ROT_PIN, INPUT_PULLUP);

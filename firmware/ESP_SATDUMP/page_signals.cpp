@@ -91,13 +91,6 @@ static void drawBars() {
         tft.print(infoBuf);
     }
 
-    // NO FIX overlay
-    if (!gpsData.fix_quality) {
-        tft.setTextColor(COL_RED, COL_BG);
-        tft.setTextSize(2);
-        tft.setCursor((W - 6 * 12) / 2, H / 2 - 8);
-        tft.print("NO FIX");
-    }
 }
 
 void PageSignals::onEnter() {
