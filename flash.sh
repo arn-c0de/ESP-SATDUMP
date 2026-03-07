@@ -82,11 +82,12 @@ arduino-cli compile \
 
 # ── Upload ───────────────────────────────────────────────────────────────────
 echo ""
-echo "==> Uploading to $PORT ..."
+echo "==> Uploading to $PORT at 115200 baud..."
 arduino-cli upload \
     --fqbn "$BOARD" \
     --port "$PORT" \
     --input-dir "$BUILD_DIR" \
+    --upload-property "upload.speed=115200" \
     "$SKETCH_DIR"
 
 echo ""
