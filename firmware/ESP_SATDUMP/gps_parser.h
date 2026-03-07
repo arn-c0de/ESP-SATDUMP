@@ -13,24 +13,20 @@ struct SatInfo {
 
 // ─── Top-level GPS data struct ───────────────────────────────────────────────
 struct GpsData {
-    // Fix quality: 0=no fix, 1=GPS, 2=DGPS
-    uint8_t  fix_quality;
-    uint8_t  sats_used;     // from GGA
-    uint8_t  sats_inview;   // from GSV
-    float    lat;           // decimal degrees, negative = S
-    float    lon;           // decimal degrees, negative = W
-    float    alt_m;         // metres above sea level
+    uint8_t  fix_quality;   // 0=no fix, 1=GPS, 2=DGPS
+    uint8_t  sats_used;     
+    uint8_t  sats_inview;   
+    float    lat;           
+    float    lon;           
+    float    alt_m;         
     float    hdop;
     float    speed_kmh;
     float    course_deg;
-    // UTC time from RMC
     uint8_t  hour, minute, second;
     uint8_t  day, month;
     uint16_t year;
 
     SatInfo  sats[MAX_SATS];
-
-    // Last raw NMEA sentence (null-terminated, up to 82 chars)
     char     last_sentence[84];
 };
 
@@ -38,4 +34,9 @@ extern GpsData gpsData;
 
 // ─── Parser API ─────────────────────────────────────────────────────────────
 void gpsParserInit();
-void gpsParserUpdate();  // call frequently from loop()
+void gpsParserUpdate();
+
+// ─── Sat Utils ──────────────────────────────────────────────────────────────
+char     satConstellation(uint8_t prn);
+uint16_t satColor(uint8_t prn);
+uint16_t satSnrColor(uint8_t snr);

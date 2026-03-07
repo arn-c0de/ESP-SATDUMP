@@ -2,25 +2,6 @@
 #include "display_utils.h"
 #include "gps_parser.h"
 
-// ── Constellation from PRN ────────────────────────────────────────────────────
-static char constellationChar(uint8_t prn) {
-    if (prn >= 1   && prn <= 32)  return 'G';
-    if (prn >= 33  && prn <= 64)  return 'S';
-    if (prn >= 65  && prn <= 96)  return 'R';
-    if (prn >= 193 && prn <= 202) return 'J';
-    if (prn >= 201 && prn <= 235) return 'C';
-    if (prn >= 301 && prn <= 336) return 'E';
-    return '?';
-}
-
-static uint16_t constellationColor(uint8_t prn) {
-    if (prn >= 1   && prn <= 32)  return COL_ACCENT; // GPS: Cyan
-    if (prn >= 65  && prn <= 96)  return COL_YELLOW; // GLONASS: Yellow
-    if (prn >= 301 && prn <= 336) return COL_GREEN;  // Galileo: Green
-    return COL_TEXT;
-}
-
-// ── Layout constants ──────────────────────────────────────────────────────────
 static const int16_t LEFT_W   = 28;
 static const int16_t RIGHT_W  = 50;
 static const int16_t BAR_PAD  = 4;
@@ -28,7 +9,7 @@ static const int16_t BAR_PAD  = 4;
 static void drawSegmentedBar(int16_t x, int16_t y, int16_t w, int16_t h, uint8_t snr) {
     int16_t barW = (snr * w) / 50;
     if (barW > w) barW = w;
-    uint16_t color = snrColor(snr);
+    uint16_t color = satSnrColor(snr);
 
     int16_t segments = 10;
     int16_t segW = w / segments;
@@ -48,7 +29,6 @@ static void drawBars() {
     int16_t BAR_H   = ROW_H - 6;
     int16_t y0      = STATUS_BAR_H + 4;
 
-    // Sort visible satellites by PRN
     uint8_t order[MAX_SATS];
     uint8_t count = 0;
     for (uint8_t i = 0; i < MAX_SATS; i++) {
@@ -74,25 +54,21 @@ static void drawBars() {
 
         const SatInfo& s = gpsData.sats[order[r]];
 
-        // ── Left: "G01" ─────────────────────────────────────────────────────
         char prnBuf[5];
-        snprintf(prnBuf, sizeof(prnBuf), "%c%02d", constellationChar(s.prn), s.prn);
-        tft.setTextColor(constellationColor(s.prn), COL_BG);
+        snprintf(prnBuf, sizeof(prnBuf), "%c%02d", satConstellation(s.prn), s.prn);
+        tft.setTextColor(satColor(s.prn), COL_BG);
         tft.setTextSize(1);
         tft.setCursor(4, ty);
         tft.print(prnBuf);
 
-        // ── SNR bar ──────────────────────────────────────────────────────────
         drawSegmentedBar(LEFT_W, ry + 3, BAR_MAX_W, BAR_H, s.snr);
 
-        // ── Right: SNR + Used Flag ───────────────────────────────────────────
         tft.setTextColor(s.used ? COL_GREEN : COL_DIM, COL_BG);
         tft.setCursor(LEFT_W + BAR_MAX_W + BAR_PAD, ty);
         char snrBuf[8];
         snprintf(snrBuf, sizeof(snrBuf), "%2d", s.snr);
         tft.print(snrBuf);
 
-        tft.setTextSize(1);
         tft.setCursor(W - 14, ty);
         tft.print(s.used ? "*" : " ");
     }

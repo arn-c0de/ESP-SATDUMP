@@ -4,7 +4,7 @@ TFT_eSPI tft = TFT_eSPI();
 
 static bool _portrait = (DEFAULT_PORTRAIT != 0);
 
-static inline int16_t centeredX(const char* s, uint8_t sz) {
+int16_t centeredX(const char* s, uint8_t sz) {
     return (tft.width() - (int16_t)(strlen(s) * 6 * sz)) / 2;
 }
 
@@ -13,8 +13,6 @@ void showSplash() {
     int16_t H = tft.height();
     tft.fillScreen(COL_BG);
 
-    // ── Layout: calculate total block height to center vertically
-    // Title (size 4 = 32px) + gap 6 + version (size 2 = 16px) + gap 20 + art 7×16px
     const int16_t TITLE_H   = 32;
     const int16_t VER_H     = 16;
     const int16_t ART_LINE_H= 16;
@@ -22,21 +20,18 @@ void showSplash() {
     const int16_t TOTAL_H   = TITLE_H + 6 + VER_H + 20 + ART_LINES * ART_LINE_H;
     int16_t y = (H - TOTAL_H) / 2;
 
-    // ── "SATDUMP" title
     tft.setTextColor(COL_ACCENT, COL_BG);
     tft.setTextSize(4);
     tft.setCursor(centeredX("SATDUMP", 4), y);
     tft.print("SATDUMP");
     y += TITLE_H + 6;
 
-    // ── Version
     tft.setTextColor(COL_YELLOW, COL_BG);
     tft.setTextSize(2);
     tft.setCursor(centeredX(SATDUMP_VERSION, 2), y);
     tft.print(SATDUMP_VERSION);
     y += VER_H + 20;
 
-    // ── ASCII satellite (size 2)
     const char* art[ART_LINES] = {
         "      _______      ",
         "  ___[_______]___  ",
@@ -81,7 +76,6 @@ void drawStatusBar(const char* pageName, uint8_t satsInView, uint8_t fixQuality)
 
     tft.setTextColor(COL_ACCENT, COL_STATUS_BG);
     tft.setTextSize(1);
-
     tft.setCursor(4, 6);
     tft.print(pageName);
 
@@ -109,13 +103,6 @@ void clearContent() {
     tft.fillRect(0, STATUS_BAR_H + 1, tft.width(), tft.height() - STATUS_BAR_H - 1, COL_BG);
 }
 
-uint16_t snrColor(uint8_t snr) {
-    if (snr >= SNR_GOOD) return COL_GREEN;
-    if (snr >= SNR_FAIR) return COL_YELLOW;
-    if (snr > 0)         return COL_RED;
-    return COL_DIM;
-}
-
 void drawBadge(int16_t x, int16_t y, const char* text, uint16_t color, uint16_t textColor) {
     int16_t tw = (int16_t)(strlen(text) * 6 * 2);
     tft.fillRoundRect(x, y, tw + 8, 20, 4, color);
@@ -127,13 +114,26 @@ void drawBadge(int16_t x, int16_t y, const char* text, uint16_t color, uint16_t 
 
 void drawValueRow(int16_t x, int16_t y, int16_t w, const char* label, const char* value, uint16_t valCol) {
     tft.setTextSize(1);
-    tft.setTextColor(COL_ACCENT, COL_BG); // Brighter label color
+    tft.setTextColor(COL_ACCENT, COL_BG);
     tft.setCursor(x, y);
     tft.print(label);
 
     tft.setTextColor(valCol, COL_BG);
     int16_t valW = (int16_t)(strlen(value) * 6 * 1);
     tft.setCursor(x + w - valW, y);
+    tft.print(value);
+}
+
+void drawLargeRow(int16_t x, int16_t y, int16_t w, const char* label, const char* value, uint16_t valCol) {
+    tft.setTextSize(1);
+    tft.setTextColor(COL_ACCENT, COL_BG);
+    tft.setCursor(x, y);
+    tft.print(label);
+
+    tft.setTextSize(2);
+    tft.setTextColor(valCol, COL_BG);
+    int16_t valW = (int16_t)(strlen(value) * 6 * 2);
+    tft.setCursor(x + w - valW, y - 4);
     tft.print(value);
 }
 
