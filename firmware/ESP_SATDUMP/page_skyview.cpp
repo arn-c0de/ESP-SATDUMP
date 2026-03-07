@@ -73,9 +73,9 @@ static void drawSatellites() {
 
         tft.setTextColor(COL_TEXT, COL_BG);
         tft.setTextSize(1);
-        char buf[4]; snprintf(buf, sizeof(buf), "%02d", s.prn);
         int16_t tx = (x > CX) ? x + 10 : x - 22;
-        tft.setCursor(tx, y - 3); tft.print(buf);
+        tft.setCursor(tx, y - 3);
+        tft.printf("%02d", s.prn);
     }
 }
 

@@ -54,20 +54,16 @@ static void drawBars() {
 
         const SatInfo& s = gpsData.sats[order[r]];
 
-        char prnBuf[5];
-        snprintf(prnBuf, sizeof(prnBuf), "%c%02d", satConstellation(s.prn), s.prn);
         tft.setTextColor(satColor(s.prn), COL_BG);
         tft.setTextSize(1);
         tft.setCursor(4, ty);
-        tft.print(prnBuf);
+        tft.printf("%c%02d", satConstellation(s.prn), s.prn);
 
         drawSegmentedBar(LEFT_W, ry + 3, BAR_MAX_W, BAR_H, s.snr);
 
         tft.setTextColor(s.used ? COL_GREEN : COL_DIM, COL_BG);
         tft.setCursor(LEFT_W + BAR_MAX_W + BAR_PAD, ty);
-        char snrBuf[8];
-        snprintf(snrBuf, sizeof(snrBuf), "%2d", s.snr);
-        tft.print(snrBuf);
+        tft.printf("%2d", s.snr);
 
         tft.setCursor(W - 14, ty);
         tft.print(s.used ? "*" : " ");
