@@ -127,7 +127,7 @@ void drawBadge(int16_t x, int16_t y, const char* text, uint16_t color, uint16_t 
 
 void drawValueRow(int16_t x, int16_t y, int16_t w, const char* label, const char* value, uint16_t valCol) {
     tft.setTextSize(1);
-    tft.setTextColor(COL_DIM, COL_BG);
+    tft.setTextColor(COL_ACCENT, COL_BG); // Brighter label color
     tft.setCursor(x, y);
     tft.print(label);
 
