@@ -18,6 +18,7 @@
 #include "display_utils.h"
 #include "encoder.h"
 #include "gps_parser.h"
+#include "launcher.h"
 #include "page_manager.h"
 #include "page_skyview.h"
 #include "page_signals.h"
@@ -37,6 +38,7 @@ void setup() {
     displayInit();
     showSplash();
     encoderInit();
+    launcherCheckAndRun();  // check BTN_ROT_PIN / NVS flag → OS menu
     gpsParserInit();
     pinMode(BTN_ROT_PIN, INPUT_PULLUP);
 
@@ -93,8 +95,11 @@ void loop() {
         char cmd = (char)Serial.read();
         if (cmd == 's') {
             printStatus();
+        } else if (cmd == 'l') {
+            Serial.println("[LAUNCHER] rebooting to OS launcher...");
+            launcherRebootToLauncher();
         } else if (cmd == 'h') {
-            Serial.println("[HELP] s=status  h=help");
+            Serial.println("[HELP] s=status  l=OS launcher  h=help");
         }
     }
     pm.loop();

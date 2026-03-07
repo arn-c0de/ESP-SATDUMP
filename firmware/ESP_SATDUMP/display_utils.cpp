@@ -50,6 +50,13 @@ void showSplash() {
         y += ART_LINE_H;
     }
 
+    // OS Launcher hint
+    tft.setTextColor(COL_DIM, COL_BG);
+    tft.setTextSize(1);
+    const char* hint = "Hold GPIO26 for OS Launcher";
+    tft.setCursor(centeredX(hint, 1), H - 14);
+    tft.print(hint);
+
     delay(2500);
     tft.fillScreen(COL_BG);
 }

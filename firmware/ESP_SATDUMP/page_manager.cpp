@@ -1,5 +1,6 @@
 #include "page_manager.h"
 #include "gps_parser.h"
+#include "launcher.h"
 
 void PageManager::addPage(Page* p) {
     if (_count < MAX_PAGES) _pages[_count++] = p;
@@ -34,8 +35,12 @@ void PageManager::loop() {
         switchTo((_current + _count - 1) % _count);
         return;
     }
+    if (ev == EncEvent::LONG_PRESS) {
+        launcherRebootToLauncher();  // sets NVS flag and reboots
+        return;
+    }
     if (ev != EncEvent::NONE) {
-        // Pass clicks / long presses to active page
+        // Pass clicks to active page
         _pages[_current]->onEncoder(ev);
     }
 

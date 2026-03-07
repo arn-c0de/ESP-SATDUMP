@@ -120,6 +120,7 @@ Use `monitorv2.sh` or any serial terminal at `115200`.
 - [GPS Module](docs/gps_module.md)
 - [Pages](docs/pages.md)
 - [GPS Visual CLI Tool](docs/gps_visual_cli.md)
+- [Multi-OS Launcher](docs/launcher.md)
 
 ## License
 

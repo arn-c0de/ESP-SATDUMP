@@ -78,6 +78,8 @@ echo "==> Compiling $SKETCH_DIR ..."
 arduino-cli compile \
     --fqbn "$BOARD" \
     --build-path "$BUILD_DIR" \
+    --build-property "build.partitions=min_spiffs" \
+    --build-property "upload.maximum_size=1966080" \
     "$SKETCH_DIR"
 
 # ── Upload ───────────────────────────────────────────────────────────────────

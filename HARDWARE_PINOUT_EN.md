@@ -1,75 +1,61 @@
-# Hardware Pinout (ESP32 + TFT + Encoder + SD)
+# Hardware Pinout (ESP32 + TFT + Encoder + GPS + SD)
 
-This document summarizes a reference wiring setup for the Gladiator WiFi Tool.
+This document summarizes the reference wiring for **ESP-SATDUMP**.
 
-Important:
-- TFT modules vary by driver and pinout. Always configure TFT_eSPI for your specific display.
-- Treat the tables below as a starting point. Confirm your wiring against `ArduinoIDE/User_Setup.h` and your hardware.
+## GPS Module (UART2)
+
+| GPS Pin | ESP32 GPIO | Description |
+| --- | --- | --- |
+| TX | GPIO 2 | ESP RX ← GPS TX |
+| RX | GPIO 15 | ESP TX → GPS RX |
+| VCC | 3.3V / 5V | Power (check module) |
+| GND | GND | Ground |
+
+## SD Card Module (SPI - Shared Bus)
+
+| SD Pin | ESP32 GPIO | Description |
+| --- | --- | --- |
+| CS | GPIO 13 | Chip Select |
+| MOSI | GPIO 23 | SPI MOSI |
+| MISO | GPIO 19 | SPI MISO |
+| SCK | GPIO 18 | SPI Clock |
+| VCC | 3.3V | Power |
+| GND | GND | Ground |
 
 ## Rotary Encoder (KY-040)
 
 | Encoder Pin | ESP32 GPIO | Description |
 | --- | --- | --- |
-| DT | GPIO 32 | Rotation direction |
 | CLK | GPIO 33 | Clock signal |
+| DT | GPIO 32 | Rotation direction |
 | SW | GPIO 25 | Button/switch |
 | + | 3.3V | Power |
 | GND | GND | Ground |
 
-## SD Card Module (SPI)
-
-| SD Pin | ESP32 GPIO | Description |
-| --- | --- | --- |
-| CS | GPIO 13 | Chip select |
-| MOSI | GPIO 23 | SPI MOSI |
-| MISO | GPIO 19 | SPI MISO |
-| SCK | GPIO 18 | SPI clock |
-| VCC | 3.3V | Power |
-| GND | GND | Ground |
-
-## TFT Display (SPI, TFT_eSPI)
-
-TFT wiring is display-dependent. The most common SPI signals are:
+## TFT Display (4.0" ST7796S SPI - Shared Bus)
 
 | TFT Pin | ESP32 GPIO | Description |
 | --- | --- | --- |
 | VCC | 3.3V | Power |
 | GND | GND | Ground |
-| MOSI / SDI | GPIO 23 | SPI MOSI |
-| SCK | GPIO 18 | SPI clock |
-| CS | (configurable) | Chip select |
-| DC | (configurable) | Data/command |
-| RST | (configurable) | Reset |
-| BL / LED | GPIO 4 | Backlight (example) |
-| MISO / SDO | GPIO 19 | SPI MISO (optional) |
+| SCLK | GPIO 18 | SPI Clock |
+| MOSI | GPIO 23 | SPI MOSI |
+| MISO | GPIO 19 | SPI MISO |
+| CS | GPIO 5 | Chip Select |
+| DC | GPIO 16 | Data/Command |
+| RST | GPIO 17 | Reset |
+| BL | GPIO 4 | Backlight Control |
 
-## SPI Bus Sharing Notes
+## Button: Orientation Toggle
 
-- The TFT and SD card share MOSI/MISO/SCK on the SPI bus.
-- The TFT and SD card must use different chip select (CS) pins.
-
-## TFT_eSPI Configuration Reference
-
-A reference `User_Setup.h` is included in this repository:
-- `ArduinoIDE/User_Setup.h`
-
-Typical pin macros in TFT_eSPI:
-
-```cpp
-#define TFT_CS   15
-#define TFT_DC    2
-#define TFT_RST   4
-#define TFT_BL    4
-```
-
-Adjust these values to match your wiring and display module.
+| Component | ESP32 GPIO | Description |
+| --- | --- | --- |
+| Button | GPIO 26 | Toggle Portrait/Landscape |
 
 ## Checklist
 
 - All grounds connected (shared GND).
-- Use 3.3V for TFT and SD card power (unless your specific module explicitly supports 5V).
-- MOSI/MISO/SCK wired consistently across TFT and SD card.
-- TFT CS and SD CS are different pins.
-- TFT_eSPI configured for the correct driver (ILI9341/ST7789/etc.) and pins.
-- SD card formatted as FAT32.
-
+- Use 3.3V for TFT, SD, and Encoder power.
+- **SPI Sharing:** TFT and SD card share MOSI, MISO, and SCLK, but use different CS pins (GPIO 5 and GPIO 13).
+- **TFT_eSPI** must be configured using the `User_Setup.h` provided in the firmware folder.
+- Ensure GPS TX is connected to ESP RX (GPIO 2) and GPS RX to ESP TX (GPIO 15).
