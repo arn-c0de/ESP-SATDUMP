@@ -55,3 +55,9 @@ Example:
 - If `RMC status = V` and `GGA quality = 0`, there is no valid GPS fix yet.
 - The tool still runs and continues updating as soon as valid data arrives.
 - Dependencies `pyserial` and `rich` are installed automatically by the launcher when missing.
+
+
+## Pushbuttons (AHH-1.0)
+
+- Pushbutton 1: GPIO26
+- Pushbutton 2: GPIO27

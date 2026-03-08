@@ -125,3 +125,9 @@ Use `monitorv2.sh` or any serial terminal at `115200`.
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+
+## Pushbuttons (AHH-1.0)
+
+- Pushbutton 1: GPIO26
+- Pushbutton 2: GPIO27

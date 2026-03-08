@@ -5,6 +5,7 @@ set -euo pipefail
 SKETCH_DIR="$(cd "$(dirname "$0")/firmware/ESP_SATDUMP" && pwd)"
 BOARD="esp32:esp32:esp32"
 BUILD_DIR="/tmp/esp-satdump-build"
+UPLOAD_BAUD="921600"
 
 # ── Detect serial port ───────────────────────────────────────────────────────
 PORT="${1:-}"
@@ -84,12 +85,12 @@ arduino-cli compile \
 
 # ── Upload ───────────────────────────────────────────────────────────────────
 echo ""
-echo "==> Uploading to $PORT at 115200 baud..."
+echo "==> Uploading to $PORT at $UPLOAD_BAUD baud..."
 arduino-cli upload \
     --fqbn "$BOARD" \
     --port "$PORT" \
     --input-dir "$BUILD_DIR" \
-    --upload-property "upload.speed=115200" \
+    --upload-property "upload.speed=$UPLOAD_BAUD" \
     "$SKETCH_DIR"
 
 echo ""

@@ -56,18 +56,16 @@ If SD mount fails or no `.bin` files are found, an error is shown for 3 seconds 
 
 ## SD Card Setup
 
-The SD card uses a **separate SPI bus (VSPI)** with dedicated GPIO pins, independent from the TFT display (which uses HSPI on GPIO 18/19/23).
+For AHH-1.0, the SD card uses a **dedicated HSPI bus** and no longer shares the TFT SPI data lines.
 
 ### Wiring
 
-| SD Module Pin | ESP32 GPIO |
-|---------------|-----------|
-| MOSI          | **13**    |
-| MISO          | **21**    |
-| SCK           | **22**    |
-| CS            | **27**    |
-| VCC           | 3.3 V     |
-| GND           | GND       |
+| Component | Signal | Old GPIO | **Final GPIO (AHH-1.0)** | Reason |
+| :--- | :--- | :--- | :--- | :--- |
+| **SD Card** | **MISO** | 19 | **12** | Moved to 12. |
+| **SD Card** | **MOSI** | 23 | **14** | Moved to 14. |
+| **SD Card** | **SCK**  | 18 | **22** | Dedicated SPI bus (HSPI). |
+| **SD Card** | **CS**   | 13 | **13** | (Unchanged). |
 
 ### SD Card Preparation
 
@@ -120,3 +118,9 @@ OTA flashing requires two app partitions. The project uses the **`min_spiffs`** 
 | `firmware/ESP_SATDUMP/page_manager.cpp` | Long-press encoder event triggers `launcherRebootToLauncher()` |
 | `firmware/ESP_SATDUMP/display_utils.cpp` | Splash screen hint text |
 | `flash.sh` | OTA partition build flags |
+
+
+## Pushbuttons (AHH-1.0)
+
+- Pushbutton 1: GPIO26
+- Pushbutton 2: GPIO27

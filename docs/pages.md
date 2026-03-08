@@ -101,3 +101,9 @@ Colour coding:
 > CLICK events. Current implementation routes CW/CCW directly to the page
 > only when the page manager is not consuming them — use the click to
 > "enter scroll mode" in a future revision.
+
+
+## Pushbuttons (AHH-1.0)
+
+- Pushbutton 1: GPIO26
+- Pushbutton 2: GPIO27

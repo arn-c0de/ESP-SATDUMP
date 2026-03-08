@@ -18,7 +18,7 @@
 #define TFT_HEIGHT 480
 
 // Use SPI port 0 (VSPI)
-#define USE_HSPI_PORT   // comment out to use VSPI
+//#define USE_HSPI_PORT   // comment out to use VSPI
 
 #define SPI_FREQUENCY       27000000
 #define SPI_READ_FREQUENCY   20000000

@@ -47,3 +47,9 @@ To change to 38400 via UBX command (send once, then reconnect at new baud):
 $PUBX,41,1,0007,0003,38400,0*20\r\n
 ```
 Update `GPS_BAUD` in `config.h` accordingly.
+
+
+## Pushbuttons (AHH-1.0)
+
+- Pushbutton 1: GPIO26
+- Pushbutton 2: GPIO27

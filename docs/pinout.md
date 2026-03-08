@@ -37,7 +37,24 @@ Baud: 9600, SERIAL_8N1
 | +           | 3.3V      |                 |
 | GND         | GND       |                 |
 
-## SPI Bus Sharing
+## SD Card — AHH-1.0 Handheld (Dedicated Bus)
 
-TFT and SD card (if fitted) share MOSI/MISO/SCK.
-Each device must use a unique CS pin.
+| Component | Signal | Old GPIO | **Final GPIO (AHH-1.0)** | Reason |
+| :--- | :--- | :--- | :--- | :--- |
+| **SD Card** | **MISO** | 19 | **12** | Moved to 12. |
+| **SD Card** | **MOSI** | 23 | **14** | Moved to 14. |
+| **SD Card** | **SCK**  | 18 | **22** | Dedicated SPI bus (HSPI). |
+| **SD Card** | **CS**   | 13 | **13** | (Unchanged). |
+
+## SPI Bus Configuration (AHH-1.0)
+
+For the **AHH-1.0 Handheld**, the TFT and SD card use **separate SPI buses**.
+- **TFT Display:** Remains on the default VSPI bus (GPIO 18, 19, 23).
+- **SD Card:** Uses the HSPI peripheral (GPIO 12, 14, 22).
+This separation prevents common interference issues where the SD card module fails to release the MISO line correctly.
+
+
+## Pushbuttons (AHH-1.0)
+
+- Pushbutton 1: GPIO26
+- Pushbutton 2: GPIO27

@@ -11,16 +11,14 @@ This document summarizes the reference wiring for **ESP-SATDUMP**.
 | VCC | 3.3V / 5V | Power (check module) |
 | GND | GND | Ground |
 
-## SD Card Module (SPI - Shared Bus)
+## SD Card Module (SPI - Dedicated Bus AHH-1.0)
 
-| SD Pin | ESP32 GPIO | Description |
-| --- | --- | --- |
-| CS | GPIO 13 | Chip Select |
-| MOSI | GPIO 23 | SPI MOSI |
-| MISO | GPIO 19 | SPI MISO |
-| SCK | GPIO 18 | SPI Clock |
-| VCC | 3.3V | Power |
-| GND | GND | Ground |
+| Component | Signal | Old GPIO | **Final GPIO (AHH-1.0)** | Reason |
+| :--- | :--- | :--- | :--- | :--- |
+| **SD Card** | **MISO** | 19 | **12** | Moved to 12. |
+| **SD Card** | **MOSI** | 23 | **14** | Moved to 14. |
+| **SD Card** | **SCK**  | 18 | **22** | Dedicated SPI bus (HSPI). |
+| **SD Card** | **CS**   | 13 | **13** | (Unchanged). |
 
 ## Rotary Encoder (KY-040)
 
@@ -56,6 +54,12 @@ This document summarizes the reference wiring for **ESP-SATDUMP**.
 
 - All grounds connected (shared GND).
 - Use 3.3V for TFT, SD, and Encoder power.
-- **SPI Sharing:** TFT and SD card share MOSI, MISO, and SCLK, but use different CS pins (GPIO 5 and GPIO 13).
+- **SPI Configuration (AHH-1.0):** TFT and SD card use **separate SPI buses**. TFT remains on the default VSPI (18, 19, 23), while the SD card uses the HSPI peripheral on GPIOs 12, 14, and 22. This resolves MISO tri-state conflicts common with generic SD modules and avoids flash interference.
 - **TFT_eSPI** must be configured using the `User_Setup.h` provided in the firmware folder.
 - Ensure GPS TX is connected to ESP RX (GPIO 2) and GPS RX to ESP TX (GPIO 15).
+
+
+## Pushbuttons (AHH-1.0)
+
+- Pushbutton 1: GPIO26
+- Pushbutton 2: GPIO27

@@ -24,6 +24,7 @@
 #include "page_signals.h"
 #include "page_fixinfo.h"
 #include "page_nmea.h"
+#include <SPI.h>
 
 static PageSkyView  pageSkyView;
 static PageSignals  pageSignals;
@@ -35,6 +36,8 @@ void setup() {
     Serial.begin(115200);
     Serial.println("[ESP-SATDUMP] boot");
 
+    // Shared TFT/SD SPI bus baseline (VSPI default pins: SCK18, MISO19, MOSI23).
+    SPI.begin();
     displayInit();
     showSplash();
     encoderInit();

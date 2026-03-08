@@ -54,3 +54,9 @@ Sentences handled: `$GPGGA`, `$GPRMC`, `$GPGSV`, `$GPGSA`
 
 Checksum validated for every sentence; sentences with bad checksums are silently
 dropped.
+
+
+## Pushbuttons (AHH-1.0)
+
+- Pushbutton 1: GPIO26
+- Pushbutton 2: GPIO27
