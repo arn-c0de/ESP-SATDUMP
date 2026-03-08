@@ -69,7 +69,7 @@
 #define COL_STATUS_BG   0x000Fu
 
 // ── Version
-#define SATDUMP_VERSION "B-1.0"
+#define SATDUMP_VERSION "B-1.1"
 
 // ── SNR thresholds (dBHz)
 #define SNR_GOOD        35
