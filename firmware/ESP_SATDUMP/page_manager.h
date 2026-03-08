@@ -10,6 +10,11 @@ public:
     virtual void        onEnter()                 = 0;  // full redraw
     virtual void        update()                  = 0;  // called ~250ms
     virtual void        onEncoder(EncEvent ev)    = 0;
+
+    // Override to true: PageManager forwards CW/CCW to page instead of switching pages
+    virtual bool captureEncoder() const { return false; }
+    // Override to true: PageManager won't launch launcher on long press
+    virtual bool onLongPress()          { return false; }
 };
 
 // ─── Page manager ────────────────────────────────────────────────────────────

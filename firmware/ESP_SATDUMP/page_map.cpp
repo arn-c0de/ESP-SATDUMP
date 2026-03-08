@@ -14,7 +14,8 @@ static uint8_t _lastDrawZoom = 0;
 void PageMap::onEnter() {
     tft.fillScreen(COL_BG);
     drawStatusBar(name(), gpsData.sats_inview, gpsData.sats_used, gpsData.hdop, gpsData.fix_quality);
-    _lastLat = 0; 
+    _zoomMode = false;
+    _lastLat = 0;
     _lastLon = 0;
     _lastDrawZoom = 0;
     if (gpsData.fix_quality > 0 || _persistLat != 0) {
@@ -35,13 +36,28 @@ void PageMap::update() {
     }
 }
 
+bool PageMap::onLongPress() {
+    _zoomMode = true;
+    drawZoomBadge();
+    return true;  // handled — don't launch launcher
+}
+
 void PageMap::onEncoder(EncEvent ev) {
-    if (ev == EncEvent::CW && _zoom < 18) {
-        _zoom++;
-        drawMap();
-    } else if (ev == EncEvent::CCW && _zoom > 5) {
-        _zoom--;
-        drawMap();
+    if (_zoomMode) {
+        if (ev == EncEvent::CLICK) {
+            _zoomMode = false;
+            clearZoomBadge();
+            return;
+        }
+        if (ev == EncEvent::CW && _zoom < 18) {
+            _zoom++;
+            drawMap();
+            drawZoomBadge();
+        } else if (ev == EncEvent::CCW && _zoom > 5) {
+            _zoom--;
+            drawMap();
+            drawZoomBadge();
+        }
     }
 }
 
@@ -86,6 +102,24 @@ void PageMap::drawMap() {
     tft.drawCircle(CX, CY, 5, crossCol);
 }
 
+void PageMap::drawZoomBadge() {
+    // Bottom-left corner: dark pill showing "ZOOM  Z:15"
+    char buf[16];
+    snprintf(buf, sizeof(buf), "ZOOM  Z:%d", _zoom);
+    int bx = 4, by = tft.height() - 20, bw = 88, bh = 16;
+    tft.fillRect(bx, by, bw, bh, 0x2104);          // very dark grey
+    tft.drawRect(bx, by, bw, bh, COL_ACCENT);
+    tft.setTextColor(COL_ACCENT, 0x2104);
+    tft.setTextSize(1);
+    tft.setCursor(bx + 4, by + 4);
+    tft.print(buf);
+}
+
+void PageMap::clearZoomBadge() {
+    // Erase badge area with background colour
+    tft.fillRect(4, tft.height() - 20, 88, 16, COL_BG);
+}
+
 void PageMap::loadTile(int tx, int ty, int x, int y) {
     char path[64];
     snprintf(path, sizeof(path), "/Tiles/%d/%d/%d.bin", _zoom, tx, ty);
@@ -109,15 +143,14 @@ void PageMap::loadTile(int tx, int ty, int x, int y) {
         return;
     }
 
-    // Direct SPI push to ensure no driver gaps
-    tft.startWrite();
+    // Read SD row → release SPI → write TFT row (never overlap SD + TFT on same bus)
     for (int r = 0; r < drawH; r++) {
         file.seek(((offY + r) * 256 + offX) * 2);
-        file.read((uint8_t*)rowBuffer, drawW * 2);
-        // Push colors row by row with manual window management per row to be safe
+        file.read((uint8_t*)rowBuffer, drawW * 2);   // SD read  (SPI free for TFT)
+        tft.startWrite();
         tft.setAddrWindow(drawX, drawY + r, drawW, 1);
-        tft.pushColors(rowBuffer, drawW, true); // true = swapped endian if needed, but our .bin is little
+        tft.pushColors(rowBuffer, drawW, true);
+        tft.endWrite();                               // release SPI before next SD read
     }
-    tft.endWrite();
     file.close();
 }

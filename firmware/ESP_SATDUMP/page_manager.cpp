@@ -28,15 +28,17 @@ void PageManager::loop() {
     // Handle encoder
     EncEvent ev = encoderRead();
     if (ev == EncEvent::CW) {
-        switchTo((_current + 1) % _count);
+        if (_pages[_current]->captureEncoder()) _pages[_current]->onEncoder(ev);
+        else switchTo((_current + 1) % _count);
         return;
     }
     if (ev == EncEvent::CCW) {
-        switchTo((_current + _count - 1) % _count);
+        if (_pages[_current]->captureEncoder()) _pages[_current]->onEncoder(ev);
+        else switchTo((_current + _count - 1) % _count);
         return;
     }
     if (ev == EncEvent::LONG_PRESS) {
-        launcherRebootToLauncher();  // sets NVS flag and reboots
+        if (!_pages[_current]->onLongPress()) launcherRebootToLauncher();
         return;
     }
     if (ev != EncEvent::NONE) {
