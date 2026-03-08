@@ -55,8 +55,6 @@ void PageMap::onEncoder(EncEvent ev) {
         _zoom--;
         drawMap();
     }
-}
-
 void PageMap::drawMap() {
     double lat, lon;
 
@@ -72,28 +70,35 @@ void PageMap::drawMap() {
 
     double lat_rad = lat * M_PI / 180.0;
     double n = pow(2.0, _zoom);
-    
-    // Global pixel coordinates
+
+    // Global pixel coordinates (double)
     double gx = (lon + 180.0) / 360.0 * n * TILE_SIZE;
     double gy = (1.0 - log(tan(lat_rad) + 1.0/cos(lat_rad)) / M_PI) / 2.0 * n * TILE_SIZE;
-    
+
     int centerX = tft.width() / 2;
-    int centerY = (tft.height() + STATUS_BAR_H) / 2;
-    
+    int centerY = STATUS_BAR_H + (tft.height() - STATUS_BAR_H) / 2;
+
+    // We calculate an integer anchor for the (0,0) global pixel
+    // This ensures all tiles are shifted by the same integer amount
+    int anchorX = (int)round(centerX - gx);
+    int anchorY = (int)round(centerY - gy);
+
     // Determine range of tiles to draw
-    int startTX = (int)((gx - centerX) / TILE_SIZE);
-    int endTX = (int)((gx + centerX) / TILE_SIZE);
-    int startTY = (int)((gy - (centerY - STATUS_BAR_H)) / TILE_SIZE);
-    int endTY = (int)((gy + (tft.height() - centerY)) / TILE_SIZE);
-    
+    // Use floor to correctly handle negative coordinates
+    int startTX = (int)floor((gx - centerX) / TILE_SIZE);
+    int endTX   = (int)floor((gx + centerX) / TILE_SIZE);
+    int startTY = (int)floor((gy - (centerY - STATUS_BAR_H)) / TILE_SIZE);
+    int endTY   = (int)floor((gy + (tft.height() - centerY)) / TILE_SIZE);
+
     for (int ty = startTY; ty <= endTY; ty++) {
         for (int tx = startTX; tx <= endTX; tx++) {
-            int screenX = (int)(centerX - (gx - tx * TILE_SIZE));
-            int screenY = (int)(centerY - (gy - ty * TILE_SIZE));
+            // Tiles are now placed exactly TILE_SIZE apart
+            int screenX = anchorX + tx * TILE_SIZE;
+            int screenY = anchorY + ty * TILE_SIZE;
             loadTile(tx, ty, screenX, screenY);
         }
     }
-    
+
     // Draw crosshair at center
     uint16_t crossCol = (gpsData.fix_quality > 0) ? COL_RED : COL_DIM;
     tft.drawFastHLine(centerX - 10, centerY, 20, crossCol);
