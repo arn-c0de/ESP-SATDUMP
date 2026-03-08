@@ -85,8 +85,6 @@ static void parseGSV(char* fields[], uint8_t n) {
     uint8_t total   = (uint8_t)atoi(fields[3]);
     gpsData.sats_inview = total;
 
-    if (msgNum == 1) memset(gpsData.sats, 0, sizeof(gpsData.sats));
-
     for (uint8_t i = 0; i < 4 && (4 + i*4 + 3) < n; i++) {
         uint8_t base = 4 + i * 4;
         uint8_t prn  = (uint8_t)atoi(fields[base]);
@@ -112,7 +110,6 @@ static void parseGSV(char* fields[], uint8_t n) {
 
 static void parseGSA(char* fields[], uint8_t n) {
     if (n < 3) return;
-    for (uint8_t s = 0; s < MAX_SATS; s++) gpsData.sats[s].used = false;
     for (uint8_t f = 3; f < 15 && f < n; f++) {
         if (!fields[f][0]) continue;
         uint8_t prn = (uint8_t)atoi(fields[f]);
@@ -136,11 +133,11 @@ static bool validateChecksum(const char* sentence) {
 }
 
 static void dispatchSentence(char* sentence) {
-    if (!validateChecksum(sentence)) return;
-
 #if SERIAL_LOG_GPS
     Serial.println(sentence);
 #endif
+
+    if (!validateChecksum(sentence)) return;
 
     strncpy(gpsData.last_sentence, sentence, sizeof(gpsData.last_sentence) - 1);
     gpsData.last_sentence[sizeof(gpsData.last_sentence)-1] = '\0';
@@ -153,22 +150,50 @@ static void dispatchSentence(char* sentence) {
     uint8_t n = splitFields(copy, fields, 25);
     if (n < 1) return;
 
-    if      (strcmp(fields[0], "GPGGA") == 0 || strcmp(fields[0], "GNGGA") == 0) parseGGA(fields, n);
-    else if (strcmp(fields[0], "GPRMC") == 0 || strcmp(fields[0], "GNRMC") == 0) parseRMC(fields, n);
-    else if (strcmp(fields[0], "GPGSV") == 0 || strcmp(fields[0], "GNGSV") == 0) parseGSV(fields, n);
-    else if (strcmp(fields[0], "GPGSA") == 0 || strcmp(fields[0], "GNGSA") == 0) parseGSA(fields, n);
+    const char* type = fields[0];
+    size_t tLen = strlen(type);
+    if (tLen < 3) return;
+    const char* suffix = type + (tLen - 3);
+
+    if      (strcmp(suffix, "GGA") == 0) parseGGA(fields, n);
+    else if (strcmp(suffix, "RMC") == 0) parseRMC(fields, n);
+    else if (strcmp(suffix, "GSV") == 0) parseGSV(fields, n);
+    else if (strcmp(suffix, "GSA") == 0) parseGSA(fields, n);
 }
 
 void gpsParserInit() {
+    Serial.printf("[GPS] Init UART2 (RX=%d, TX=%d, Baud=%d)\n", 
+                  GPS_RX_PIN, GPS_TX_PIN, GPS_BAUD);
+    
+    Serial2.end();
+    delay(100);
     Serial2.begin(GPS_BAUD, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
+    Serial2.setRxBufferSize(1024);
+    
     memset(&gpsData, 0, sizeof(gpsData));
+    Serial.println("[GPS] Waiting for data...");
 }
 
 void gpsParserUpdate() {
+    static int rawDumpCount = 0;
+    static bool firstData = true;
+
     while (Serial2.available()) {
-        char c = (char)Serial2.read();
+        uint8_t c = (uint8_t)Serial2.read();
+        
+        if (firstData) {
+            Serial.println("[GPS] FIRST BYTES RECEIVED!");
+            firstData = false;
+        }
+
+        if (rawDumpCount < 100) {
+            Serial.printf("[RAW %02d] 0x%02X '%c'\n", rawDumpCount, c, (c >= 32 && c < 127) ? (char)c : '.');
+            rawDumpCount++;
+            if (rawDumpCount == 100) Serial.println("[GPS] Raw dump complete.");
+        }
+
         if (c == '$') _bufLen = 0;
-        if (_bufLen < sizeof(_buf) - 1) _buf[_bufLen++] = c;
+        if (_bufLen < sizeof(_buf) - 1) _buf[_bufLen++] = (char)c;
         if (c == '\n') {
             _buf[_bufLen] = '\0';
             if (_bufLen > 0 && _buf[0] == '$') dispatchSentence(_buf);

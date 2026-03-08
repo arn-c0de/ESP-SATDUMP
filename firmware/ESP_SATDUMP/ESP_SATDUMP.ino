@@ -41,7 +41,7 @@ void setup() {
     displayInit();
     showSplash();
     encoderInit();
-    launcherCheckAndRun();  // check BTN_ROT_PIN / NVS flag → OS menu
+    launcherCheckAndRun();  // <-- Launcher kommt VOR das GPS
     gpsParserInit();
     pinMode(BTN_ROT_PIN, INPUT_PULLUP);
 
