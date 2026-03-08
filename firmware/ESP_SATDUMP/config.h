@@ -39,8 +39,8 @@
 #define BTN_ROT_PIN    26       // Button: Toggle orientation
 
 // ── GPS (UART2)
-#define GPS_RX_PIN       2      // ESP RX ← GPS TX
-#define GPS_TX_PIN      15      // ESP TX → GPS RX
+#define GPS_RX_PIN      15      // ESP RX ← GPS TX
+#define GPS_TX_PIN       2      // ESP TX → GPS RX
 #define GPS_BAUD        9600
 
 // ── Rotary Encoder KY-040
