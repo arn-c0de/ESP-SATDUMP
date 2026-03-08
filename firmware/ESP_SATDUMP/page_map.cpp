@@ -55,6 +55,7 @@ void PageMap::onEncoder(EncEvent ev) {
         _zoom--;
         drawMap();
     }
+}
 void PageMap::drawMap() {
     double lat, lon;
 
