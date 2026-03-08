@@ -7,31 +7,43 @@
 static const uint16_t TILE_SIZE = 256;
 static uint16_t lineBuffer[TILE_SIZE];
 
+// Persistence across page switches
+static double _persistLat = 0;
+static double _persistLon = 0;
+
 void PageMap::onEnter() {
     tft.fillScreen(COL_BG);
     drawStatusBar(name(), gpsData.sats_inview, gpsData.fix_quality);
-    _lastLat = 0; // Force redraw
-    _lastLon = 0;
-    drawMap();
-}
-
-void PageMap::update() {
-    drawStatusBar(name(), gpsData.sats_inview, gpsData.fix_quality);
     
-    // Only redraw if position changed significantly or no fix
-    if (gpsData.fix_quality > 0) {
-        if (fabs(gpsData.lat - _lastLat) > 0.0001 || fabs(gpsData.lon - _lastLon) > 0.0001) {
-            drawMap();
-            _lastLat = gpsData.lat;
-            _lastLon = gpsData.lon;
-        }
+    _lastLat = 0; // Force redraw logic
+    _lastLon = 0;
+    
+    // Draw map immediately if we have a last known position
+    if (gpsData.fix_quality > 0 || _persistLat != 0) {
+        drawMap();
     } else {
-        // No fix, maybe show "Waiting for Fix" message
         tft.setTextColor(COL_TEXT, COL_BG);
         tft.setTextSize(2);
         const char* msg = "WAITING FOR FIX...";
         tft.setCursor(centeredX(msg, 2), tft.height() / 2);
         tft.print(msg);
+    }
+}
+
+void PageMap::update() {
+    drawStatusBar(name(), gpsData.sats_inview, gpsData.fix_quality);
+    
+    if (gpsData.fix_quality > 0) {
+        // Update persistent position
+        _persistLat = gpsData.lat;
+        _persistLon = gpsData.lon;
+
+        // Redraw if moved significantly
+        if (fabs(gpsData.lat - _lastLat) > 0.0001 || fabs(gpsData.lon - _lastLon) > 0.0001) {
+            drawMap();
+            _lastLat = gpsData.lat;
+            _lastLon = gpsData.lon;
+        }
     }
 }
 
@@ -46,23 +58,27 @@ void PageMap::onEncoder(EncEvent ev) {
 }
 
 void PageMap::drawMap() {
-    if (gpsData.fix_quality == 0) return;
+    double lat, lon;
 
-    double lat_rad = gpsData.lat * M_PI / 180.0;
+    if (gpsData.fix_quality > 0) {
+        lat = gpsData.lat;
+        lon = gpsData.lon;
+    } else if (_persistLat != 0) {
+        lat = _persistLat;
+        lon = _persistLon;
+    } else {
+        return;
+    }
+
+    double lat_rad = lat * M_PI / 180.0;
     double n = pow(2.0, _zoom);
     
     // Global pixel coordinates
-    double gx = (gpsData.lon + 180.0) / 360.0 * n * TILE_SIZE;
+    double gx = (lon + 180.0) / 360.0 * n * TILE_SIZE;
     double gy = (1.0 - log(tan(lat_rad) + 1.0/cos(lat_rad)) / M_PI) / 2.0 * n * TILE_SIZE;
-    
-    int tileX = (int)(gx / TILE_SIZE);
-    int tileY = (int)(gy / TILE_SIZE);
     
     int centerX = tft.width() / 2;
     int centerY = (tft.height() + STATUS_BAR_H) / 2;
-    
-    // Relative position of center on screen in global pixel coordinates
-    // We want (gx, gy) to be at (centerX, centerY)
     
     // Determine range of tiles to draw
     int startTX = (int)((gx - centerX) / TILE_SIZE);
@@ -79,9 +95,10 @@ void PageMap::drawMap() {
     }
     
     // Draw crosshair at center
-    tft.drawFastHLine(centerX - 10, centerY, 20, COL_RED);
-    tft.drawFastVLine(centerX, centerY - 10, 20, COL_RED);
-    tft.drawCircle(centerX, centerY, 5, COL_RED);
+    uint16_t crossCol = (gpsData.fix_quality > 0) ? COL_RED : COL_DIM;
+    tft.drawFastHLine(centerX - 10, centerY, 20, crossCol);
+    tft.drawFastVLine(centerX, centerY - 10, 20, crossCol);
+    tft.drawCircle(centerX, centerY, 5, crossCol);
 }
 
 void PageMap::loadTile(int x, int y, int screenX, int screenY) {
