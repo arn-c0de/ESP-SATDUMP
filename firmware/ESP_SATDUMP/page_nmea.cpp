@@ -15,7 +15,7 @@ void PageNMEA::redraw() {
     int16_t LINE_H = (H - STATUS_BAR_H - 10) / NMEA_LINES;
     int16_t MAX_COLS = W / 6;
 
-    drawStatusBar(name(), gpsData.sats_inview, gpsData.fix_quality);
+    drawStatusBar(name(), gpsData.sats_inview, gpsData.sats_used, gpsData.hdop, gpsData.fix_quality);
 
     if (_count > 0) {
         int16_t barH = (H - STATUS_BAR_H - 10);

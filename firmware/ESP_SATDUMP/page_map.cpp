@@ -13,7 +13,7 @@ static double _persistLon = 0;
 
 void PageMap::onEnter() {
     tft.fillScreen(COL_BG);
-    drawStatusBar(name(), gpsData.sats_inview, gpsData.fix_quality);
+    drawStatusBar(name(), gpsData.sats_inview, gpsData.sats_used, gpsData.hdop, gpsData.fix_quality);
     
     _lastLat = 0; // Force redraw logic
     _lastLon = 0;
@@ -31,7 +31,7 @@ void PageMap::onEnter() {
 }
 
 void PageMap::update() {
-    drawStatusBar(name(), gpsData.sats_inview, gpsData.fix_quality);
+    drawStatusBar(name(), gpsData.sats_inview, gpsData.sats_used, gpsData.hdop, gpsData.fix_quality);
     
     if (gpsData.fix_quality > 0) {
         // Update persistent position

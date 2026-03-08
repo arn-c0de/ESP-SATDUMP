@@ -77,7 +77,7 @@ void displayToggleRotation() {
 
 bool displayIsPortrait() { return _portrait; }
 
-void drawStatusBar(const char* pageName, uint8_t satsInView, uint8_t fixQuality) {
+void drawStatusBar(const char* pageName, uint8_t satsInView, uint8_t satsUsed, float hdop, uint8_t fixQuality) {
     int16_t W = tft.width();
     tft.fillRect(0, 0, W, STATUS_BAR_H, COL_STATUS_BG);
 
@@ -86,11 +86,21 @@ void drawStatusBar(const char* pageName, uint8_t satsInView, uint8_t fixQuality)
     tft.setCursor(4, 6);
     tft.print(pageName);
 
-    char satBuf[16];
-    snprintf(satBuf, sizeof(satBuf), "SAT:%d", satsInView);
+    char satBuf[32];
+    snprintf(satBuf, sizeof(satBuf), "SAT:%d/%d HDOP:%.2f", satsUsed, satsInView, hdop);
     int16_t tw = (int16_t)(strlen(satBuf) * 6);
-    tft.setCursor((W - tw) / 2, 6);
+    int16_t startX = (W - tw) / 2;
+    tft.setCursor(startX, 6);
     tft.print(satBuf);
+
+    // Draw quality circle next to HDOP
+    uint16_t qCol = COL_RED;
+    if (fixQuality > 0) {
+        if (hdop <= 2.0f)      qCol = COL_GREEN;
+        else if (hdop <= 5.0f) qCol = COL_YELLOW;
+        else                   qCol = COL_RED;
+    }
+    tft.fillCircle(startX + tw + 6, 10, 3, qCol);
 
     const char* fixStr;
     uint16_t fixColor;

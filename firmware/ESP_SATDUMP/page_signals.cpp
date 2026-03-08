@@ -72,11 +72,11 @@ static void drawBars() {
 
 void PageSignals::onEnter() {
     tft.fillScreen(COL_BG);
-    drawStatusBar(name(), gpsData.sats_inview, gpsData.fix_quality);
+    drawStatusBar(name(), gpsData.sats_inview, gpsData.sats_used, gpsData.hdop, gpsData.fix_quality);
     drawBars();
 }
 
 void PageSignals::update() {
-    drawStatusBar(name(), gpsData.sats_inview, gpsData.fix_quality);
+    drawStatusBar(name(), gpsData.sats_inview, gpsData.sats_used, gpsData.hdop, gpsData.fix_quality);
     drawBars();
 }

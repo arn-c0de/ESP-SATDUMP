@@ -82,13 +82,13 @@ static void drawSatellites() {
 void PageSkyView::onEnter() {
     memset(_prevSats, 0, sizeof(_prevSats));
     tft.fillScreen(COL_BG);
-    drawStatusBar(name(), gpsData.sats_inview, gpsData.fix_quality);
+    drawStatusBar(name(), gpsData.sats_inview, gpsData.sats_used, gpsData.hdop, gpsData.fix_quality);
     drawPolarGrid();
     drawSatellites();
 }
 
 void PageSkyView::update() {
     erasePrevSatellites();
-    drawStatusBar(name(), gpsData.sats_inview, gpsData.fix_quality);
+    drawStatusBar(name(), gpsData.sats_inview, gpsData.sats_used, gpsData.hdop, gpsData.fix_quality);
     drawSatellites();
 }

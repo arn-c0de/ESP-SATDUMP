@@ -11,7 +11,7 @@ void displayToggleRotation();
 bool displayIsPortrait();
 
 void showSplash();
-void drawStatusBar(const char* pageName, uint8_t satsInView, uint8_t fixQuality);
+void drawStatusBar(const char* pageName, uint8_t satsInView, uint8_t satsUsed, float hdop, uint8_t fixQuality);
 void clearContent();
 
 // ── UI Helpers ──────────────────────────────────────────────────────────────

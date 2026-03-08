@@ -57,11 +57,11 @@ static void drawContent() {
 
 void PageFixInfo::onEnter() {
     tft.fillScreen(COL_BG);
-    drawStatusBar(name(), gpsData.sats_inview, gpsData.fix_quality);
+    drawStatusBar(name(), gpsData.sats_inview, gpsData.sats_used, gpsData.hdop, gpsData.fix_quality);
     drawContent();
 }
 
 void PageFixInfo::update() {
-    drawStatusBar(name(), gpsData.sats_inview, gpsData.fix_quality);
+    drawStatusBar(name(), gpsData.sats_inview, gpsData.sats_used, gpsData.hdop, gpsData.fix_quality);
     drawContent();
 }
