@@ -43,6 +43,12 @@
 #define GPS_TX_PIN      2      // ESP TX → GPS RX
 #define GPS_BAUD        9600
 
+// ── SD Card (HSPI - Dedicated Bus AHH-1.0)
+#define SD_MISO_PIN     12
+#define SD_MOSI_PIN     14
+#define SD_SCK_PIN      22
+#define SD_CS_PIN       13
+
 // ── Rotary Encoder KY-040
 #define ENC_CLK_PIN     33
 #define ENC_DT_PIN      32

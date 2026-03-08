@@ -24,11 +24,16 @@
 #include "page_signals.h"
 #include "page_fixinfo.h"
 #include "page_nmea.h"
+#include "page_map.h"
 #include <SPI.h>
+#include <SD.h>
+
+SPIClass sdSPI(HSPI);
 
 static PageSkyView  pageSkyView;
 static PageSignals  pageSignals;
 static PageFixInfo  pageFixInfo;
+static PageMap      pageMap;
 static PageNMEA     pageNMEA;
 static PageManager  pm;
 
@@ -40,6 +45,15 @@ void setup() {
     SPI.begin();
     displayInit();
     showSplash();
+
+    // Initialize SD Card (HSPI)
+    sdSPI.begin(SD_SCK_PIN, SD_MISO_PIN, SD_MOSI_PIN, SD_CS_PIN);
+    if (!SD.begin(SD_CS_PIN, sdSPI)) {
+        Serial.println("[SD] Initialization FAILED!");
+    } else {
+        Serial.println("[SD] Initialization OK");
+    }
+
     encoderInit();
     launcherCheckAndRun();  // <-- Launcher kommt VOR das GPS
     gpsParserInit();
@@ -48,6 +62,7 @@ void setup() {
     pm.addPage(&pageSkyView);
     pm.addPage(&pageSignals);
     pm.addPage(&pageFixInfo);
+    pm.addPage(&pageMap);
     pm.addPage(&pageNMEA);
     pm.begin();
 }
